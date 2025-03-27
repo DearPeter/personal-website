@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Website</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 50%, #bbdefb 100%);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05), 
+                       0 6px 6px rgba(0, 0, 0, 0.03),
+                       inset 0 2px 2px rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2196f3, #64b5f6, #2196f3);
+            opacity: 0.7;
+        }
+        h1 {
+            color: #1976d2;
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            position: relative;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 20px;
+        }
+        .text-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .image-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        .profile-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #6ab1d7, #33d9de);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .profile-image:hover {
+            transform: scale(1.02);
+        }
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+        }
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+        .close-button {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            padding: 10px;
+        }
+        .edit-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: background-color 0.3s;
+        }
+        .edit-button:hover {
+            background-color: #2980b9;
+        }
+        .editable {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            min-height: 100px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .editable:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .preview {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .preview.active {
+            display: block;
+        }
+        .preview h1, .preview h2, .preview h3 {
+            color: #2c3e50;
+            margin-top: 1rem;
+        }
+        .preview p {
+            color: #34495e;
+            margin-bottom: 1rem;
+        }
+        .preview code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .preview pre {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .preview blockquote {
+            border-left: 4px solid #3498db;
+            margin: 1rem 0;
+            padding-left: 1rem;
+            color: #666;
+        }
+        .preview ul, .preview ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .upload-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .upload-button:hover {
+            background-color: #c0392b;
+        }
+        #imageInput {
+            display: none;
+        }
+        .markdown-tips {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .markdown-toolbar {
+            display: none;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .markdown-toolbar.active {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .toolbar-button {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .toolbar-button:hover {
+            background-color: #e9ecef;
+            border-color: #3498db;
+        }
+        .toolbar-button.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        .comments-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        .comments-title {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        .comment-form {
+            margin-bottom: 2rem;
+        }
+        .comment-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        .comment-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .comment-submit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .comment-submit:hover {
+            background-color: #2980b9;
+        }
+        .comments-list {
+            margin-top: 2rem;
+        }
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+        }
+        .comment:last-child {
+            border-bottom: none;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .comment-author {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .comment-date {
+            color: #999;
+        }
+        .comment-content {
+            color: #34495e;
+            line-height: 1.6;
+        }
+        .comment-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .comment-action {
+            color: #3498db;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .comment-action:hover {
+            color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to My Personal Website</h1>
+        </div>
+        <div class="content">
+            <div class="text-content">
+                <button class="edit-button" onclick="toggleEdit()">编辑个人描述</button>
+                <div class="markdown-toolbar" id="markdownToolbar">
+                    <button class="toolbar-button" onclick="insertMarkdown('# ', '标题1')">H1</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('## ', '标题2')">H2</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('### ', '标题3')">H3</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('**', '加粗文本')">加粗</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('*', '斜体文本')">斜体</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('- ', '列表项')">列表</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('> ', '引用文本')">引用</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('```\n', '\n```')">代码块</button>
+                    <button class="toolbar-button" onclick="insertMarkdown('[', '](链接)')">链接</button>
+                </div>
+                <div id="description" class="editable" contenteditable="false" style="display: none;"></div>
+                <div id="preview" class="preview active"></div>
+                <div class="markdown-tips" style="display: none;">
+                    支持 Markdown 格式：使用 # 表示标题，- 表示列表，> 表示引用，**文字** 表示加粗，*文字* 表示斜体
+                </div>
+            </div>
+            <div class="image-section">
+                <div class="profile-image" id="profileImage" onclick="toggleImageModal()">
+                    <img id="uploadedImage" src="" alt="Profile Image" style="display: none;">
+                    <span id="placeholderText">Profile Image Placeholder</span>
+                </div>
+                <input type="file" id="imageInput" accept="image/*">
+                <button class="upload-button" onclick="document.getElementById('imageInput').click()">上传照片</button>
+            </div>
+        </div>
+
+        <!-- 评论区域 -->
+        <div class="comments-section">
+            <h2 class="comments-title">评论区</h2>
+            <div class="comment-form">
+                <textarea class="comment-input" id="commentInput" placeholder="写下你的评论..."></textarea>
+                <button class="comment-submit" onclick="addComment()">发表评论</button>
+            </div>
+            <div class="comments-list" id="commentsList">
+                <!-- 评论将在这里动态添加 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片放大模态框 -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <span class="close-button" onclick="toggleImageModal()">&times;</span>
+            <img id="modalImage" src="" alt="Enlarged Profile Image">
+        </div>
+    </div>
+
+    <script>
+        function toggleEdit() {
+            const description = document.getElementById('description');
+            const preview = document.getElementById('preview');
+            const button = document.querySelector('.edit-button');
+            const tips = document.querySelector('.markdown-tips');
+            const toolbar = document.getElementById('markdownToolbar');
+            
+            if (description.contentEditable === 'false') {
+                description.contentEditable = 'true';
+                description.style.display = 'block';
+                preview.style.display = 'none';
+                tips.style.display = 'block';
+                toolbar.classList.add('active');
+                button.textContent = '保存描述';
+                button.style.backgroundColor = '#2ecc71';
+                updatePreview();
+            } else {
+                description.contentEditable = 'false';
+                description.style.display = 'none';
+                preview.style.display = 'block';
+                tips.style.display = 'none';
+                toolbar.classList.remove('active');
+                button.textContent = '编辑个人描述';
+                button.style.backgroundColor = '#3498db';
+                localStorage.setItem('personalDescription', description.textContent);
+            }
+        }
+
+        function insertMarkdown(prefix, placeholder) {
+            const description = document.getElementById('description');
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            
+            // 保存当前选区
+            const startOffset = range.startOffset;
+            const endOffset = range.endOffset;
+            
+            // 获取当前行的文本
+            const text = description.textContent;
+            const lines = text.split('\n');
+            const currentLine = lines[Math.floor(startOffset / (text.length / lines.length))];
+            
+            // 插入 Markdown 标记
+            const newText = text.substring(0, startOffset) + 
+                          prefix + 
+                          text.substring(startOffset, endOffset) + 
+                          (prefix === '**' || prefix === '*' ? prefix : '') +
+                          text.substring(endOffset);
+            
+            description.textContent = newText;
+            
+            // 恢复选区
+            const newRange = document.createRange();
+            newRange.setStart(description.firstChild, startOffset + prefix.length);
+            newRange.setEnd(description.firstChild, endOffset + prefix.length);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            
+            // 更新预览
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const description = document.getElementById('description');
+            const preview = document.getElementById('preview');
+            preview.innerHTML = marked.parse(description.textContent);
+        }
+
+        function toggleImageModal() {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const uploadedImage = document.getElementById('uploadedImage');
+            
+            if (modal.classList.contains('active')) {
+                modal.classList.remove('active');
+            } else if (uploadedImage.src) {
+                modalImage.src = uploadedImage.src;
+                modal.classList.add('active');
+            }
+        }
+
+        // 监听输入变化
+        document.getElementById('description').addEventListener('input', updatePreview);
+
+        // 图片上传处理
+        document.getElementById('imageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('uploadedImage');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('placeholderText').style.display = 'none';
+                    localStorage.setItem('profileImage', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 页面加载时恢复保存的内容
+        window.onload = function() {
+            // 恢复描述
+            const savedDescription = localStorage.getItem('personalDescription');
+            if (savedDescription) {
+                const description = document.getElementById('description');
+                description.textContent = savedDescription;
+                updatePreview();
+            }
+
+            // 恢复图片
+            const savedImage = localStorage.getItem('profileImage');
+            if (savedImage) {
+                const img = document.getElementById('uploadedImage');
+                img.src = savedImage;
+                img.style.display = 'block';
+                document.getElementById('placeholderText').style.display = 'none';
+            }
+
+            displayComments();
+        }
+
+        // 评论功能
+        function addComment() {
+            const commentInput = document.getElementById('commentInput');
+            const commentText = commentInput.value.trim();
+            
+            if (!commentText) return;
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                author: '访客' + Math.floor(Math.random() * 1000),
+                date: new Date().toLocaleString(),
+                likes: 0
+            };
+
+            // 获取现有评论
+            let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            comments.unshift(comment); // 将新评论添加到开头
+            localStorage.setItem('comments', JSON.stringify(comments));
+
+            // 清空输入框
+            commentInput.value = '';
+
+            // 更新评论列表
+            displayComments();
+        }
+
+        function displayComments() {
+            const commentsList = document.getElementById('commentsList');
+            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment" id="comment-${comment.id}">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${comment.date}</span>
+                    </div>
+                    <div class="comment-content">${comment.text}</div>
+                    <div class="comment-actions">
+                        <span class="comment-action" onclick="likeComment(${comment.id})">
+                            👍 ${comment.likes}
+                        </span>
+                        <span class="comment-action" onclick="deleteComment(${comment.id})">
+                            删除
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function likeComment(commentId) {
+            let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            const commentIndex = comments.findIndex(c => c.id === commentId);
+            
+            if (commentIndex !== -1) {
+                comments[commentIndex].likes++;
+                localStorage.setItem('comments', JSON.stringify(comments));
+                displayComments();
+            }
+        }
+
+        function deleteComment(commentId) {
+            if (!confirm('确定要删除这条评论吗？')) return;
+            
+            let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            comments = comments.filter(c => c.id !== commentId);
+            localStorage.setItem('comments', JSON.stringify(comments));
+            displayComments();
+        }
+    </script>
+</body>
+</html> 
